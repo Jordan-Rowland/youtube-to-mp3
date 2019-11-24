@@ -48,16 +48,16 @@ def convert_mp4_to_mp3(title):
     print(f"Saved as {title}.mp3")
 
 
-def rename_mp3s(files=os.listdir()):
+def rename_mp3s(directory):
     """Collects mp3 files from a directory and normalizes the names if the fit (artist) - (title)
     format."""
     title_match = re.compile(r"([\w+\s+]+)-([\w+\s+]+)")
     files_renamed = 0
-    mp3s = [file for file in files if file.endswith(".mp3")]
+    mp3s = [file for file in directory if file.endswith(".mp3")]
     for file in mp3s:
         match = re.search(title_match, file)
         if match:
-            print('MATCHED')
+            print("MATCHED")
             new_title = f"{match.groups()[0].strip()} - " f"{match.groups()[1].strip()}.mp3"
             if file != new_title:
                 print(f"Renaming file: \n{file}\n==> {new_title}")
@@ -68,7 +68,11 @@ def rename_mp3s(files=os.listdir()):
 
 if __name__ == "__main__":
     VIDEOS = """
-    https://www.youtube.com/watch?v=WY_sA25YyFU
+    https://www.youtube.com/watch?v=HhSjwU8gEsI
+    https://www.youtube.com/watch?v=a5BwsemFZXw
+    https://www.youtube.com/watch?v=oJyjXTrTLO0
+    https://www.youtube.com/watch?v=Y001O8Azj1U
+    https://www.youtube.com/watch?v=90Fpjwctqlw
     """.split()
 
     for index, video in enumerate(VIDEOS, 1):
@@ -76,4 +80,4 @@ if __name__ == "__main__":
         video_filename = download_yt_video(video)
         convert_mp4_to_mp3(video_filename)
 
-    rename_mp3s()
+    rename_mp3s(os.listdir())
