@@ -9,8 +9,8 @@ videos = """
 
 """.split()
 
-for index, video in enumerate(videos):
-    print(f"{index + 1} of {len(videos)}")
+for index, video in enumerate(videos, 1):
+    print(f"{index} of {len(videos)}")
     try:
         yt = YouTube(video)
         print(yt.title)
@@ -19,7 +19,7 @@ for index, video in enumerate(videos):
         print("Downloading video...")
         stream.download()
     except Exception:
-        print("Could not get video :(")
+        print("Could not get video")
         continue
     bash_command_1 = subprocess.Popen(
         ["ffmpeg", "-i", f"{yt.title}.mp4", "-vn", "-f", "wav", "-"],
@@ -37,18 +37,17 @@ for index, video in enumerate(videos):
 
 mp3s = [x for x in os.listdir() if x.endswith(".mp3")]
 
-title_match = re.compile("([\w+\s+]+)\s-\s([\w+\s+]+)")
+title_match = re.compile("([\w+\s+]+)-([\w+\s+]+)")
 
 for file in mp3s:
     match = re.search(title_match, file)
-    new_title = (
-        f"{match.groups()[0].strip()} - " \
-        f"{match.groups()[1].strip()}.mp3"
-        )
-    if file != new_title:
-        print(f"Renaming file {file} to:\n" \
-              f"{new_title}"
-        )
-        os.rename(file, new_title)
-        # os.rename(new_title, file)
-
+    if match:
+        new_title = (
+            f"{match.groups()[0].strip()} - " \
+            f"{match.groups()[1].strip()}.mp3"
+            )
+        if file != new_title:
+            print(f"Renaming file {file} to:\n" \
+                  f"{new_title}"
+            )
+            os.rename(file, new_title)
