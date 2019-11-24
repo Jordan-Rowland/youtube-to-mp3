@@ -45,7 +45,7 @@ def convert_mp4_to_mp3(title):
     output = bash_command_2.communicate()[0]
     print("Deleting original video file...")
     os.remove(f"{title}.mp4")
-    print(f"Saved as {title}.mp3")
+    print(f"Saved as '{title}.mp3'")
 
 
 def rename_mp3s(directory):
@@ -57,7 +57,6 @@ def rename_mp3s(directory):
     for file in mp3s:
         match = re.search(title_match, file)
         if match:
-            print("MATCHED")
             new_title = f"{match.groups()[0].strip()} - " f"{match.groups()[1].strip()}.mp3"
             if file != new_title:
                 print(f"Renaming file: \n{file}\n==> {new_title}")
@@ -68,11 +67,7 @@ def rename_mp3s(directory):
 
 if __name__ == "__main__":
     VIDEOS = """
-    https://www.youtube.com/watch?v=HhSjwU8gEsI
-    https://www.youtube.com/watch?v=a5BwsemFZXw
-    https://www.youtube.com/watch?v=oJyjXTrTLO0
-    https://www.youtube.com/watch?v=Y001O8Azj1U
-    https://www.youtube.com/watch?v=90Fpjwctqlw
+
     """.split()
 
     for index, video in enumerate(VIDEOS, 1):
