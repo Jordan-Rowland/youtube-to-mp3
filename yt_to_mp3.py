@@ -9,7 +9,7 @@ import subprocess
 from pytube import YouTube
 
 
-def safe_name(name, safe_chars=" -()[]"):
+def safe_name(name, safe_chars=" -()[]\"'!"):
     """Convert filename to safe characters so file renaming function works."""
     return "".join(
         [character for character in name if character.isalnum() or character in safe_chars]
@@ -48,20 +48,34 @@ def convert_mp4_to_mp3(title):
     print(f"Saved as '{title}.mp3'")
 
 
-def rename_mp3s(directory):
+def rename_mp3s(directory, confirm=None):
     """Collects mp3 files from a directory and normalizes the names if the fit (artist) - (title)
-    format."""
-    title_match = re.compile(r"([\w+\s+]+)-([\w+\s+]+)")
+    format. Optional argument to ask for confirmation for renaming."""
+    title_match = re.compile(r"([\w+\s+]+)-([\w\s'\",]+)")
     files_renamed = 0
     mp3s = [file for file in directory if file.endswith(".mp3")]
     for file in mp3s:
         match = re.search(title_match, file)
-        if match:
-            new_title = f"{match.groups()[0].strip()} - " f"{match.groups()[1].strip()}.mp3"
-            if file != new_title:
-                print(f"Renaming file: \n{file}\n==> {new_title}")
+        if not match:
+            continue
+        artist = match.groups()[0].strip()
+        title = match.groups()[1].strip()
+        new_title = f"{artist} - {title}.mp3"
+        if file == new_title or new_title in mp3s:
+            continue
+        if confirm:
+            print(f"{file} ==> {new_title}")
+            confirm = input("Rename? [y/n]: ")
+            if confirm.lower() == "y":
                 os.rename(file, new_title)
+                print("File renamed")
                 files_renamed += 1
+            else:
+                print("File unchanged")
+        else:
+            print(f"Renaming file: \n{file}\n==> {new_title}\n")
+            os.rename(file, new_title)
+            files_renamed += 1
     print(f"Files renamed: {files_renamed}")
 
 
