@@ -23,31 +23,36 @@ def download_yt_video(video_url):
         title = yt.title
         print(title)
         stream = yt.streams.filter(only_audio=True).filter(subtype="mp4").first()
-        # print(stream)
         print("Downloading video...")
-        new_title = "_".join(safe_name(title).split())
+        # new_title = "_".join(safe_name(title).split())
+        new_title = safe_name(title)
         stream.download(filename=new_title)
     except Exception:
-        print("Could not get video")
+        return False
     return new_title
 
 
-def convert_mp4_to_mp3(title, changed_output_title=None):
+def convert_mp4_to_mp3(title, output_title=None):
     """Invokes bash commands to convert file to MP3 and delete original video file."""
-    if not changed_output_title:
-        changed_output_title = title
-    bash_command_1 = subprocess.Popen(
-        ["ffmpeg", "-i", f"{title}.mp4", "-vn", "-f", "wav", "-"], stdout=subprocess.PIPE,
-    )
-    bash_command_2 = subprocess.Popen(
-        ["lame", "-V", "3", "-", f"{changed_output_title}.mp3"], stdin=bash_command_1.stdout,
-    )
-    bash_command_1.stdout.close()
-    print("Converting to MP3...")
-    output = bash_command_2.communicate()[0]
-    print("Deleting original video file...")
-    os.remove(f"{title}.mp4")
-    print(f"Saved as '{changed_output_title}.mp3'")
+    if not output_title:
+        output_title = title
+    try:
+        bash_command_1 = subprocess.Popen(
+            ["ffmpeg", "-i", f"{title}.mp4", "-vn", "-f", "wav", "-"], stdout=subprocess.PIPE,
+        )
+        bash_command_2 = subprocess.Popen(
+            ["lame", "-V", "3", "-", f"{output_title}.mp3"], stdin=bash_command_1.stdout,
+        )
+        bash_command_1.stdout.close()
+        print("Converting to MP3...")
+        output = bash_command_2.communicate()[0]
+        print("Deleting original video file...")
+        os.remove(f"{title}.mp4")
+        print(f"Saved as '{output_title}.mp3'")
+        return True
+    except Exception:
+        print("Could not convert to mp3.")
+        return False
 
 
 def rename_mp3s(directory, ask_confirmation=False):
@@ -65,18 +70,15 @@ def rename_mp3s(directory, ask_confirmation=False):
         new_title = f"{artist} - {title}.mp3"
         if file == new_title or new_title in mp3s:
             continue
-        if not ask_confirmation:
-            os.rename(file, new_title)
-            print(f"Renaming file: \n{file}\n==> {new_title}\n")
-            files_renamed += 1
-            continue
-        print(f"{file} ==> {new_title}")
-        confirm = input("Rename? ['y' to confirm]: ")
-        if not confirm.lower() == "y":
-            print("File unchanged")
-            continue
+        if ask_confirmation:
+            print(f"{file} ==> {new_title}")
+            confirm_rename = input("Rename? ['y' to confirm]: ")
+            confirmed = confirm_rename.lower() in ["y", "yes"]
+            if not confirmed:
+                print("File unchanged")
+                continue
         os.rename(file, new_title)
-        print("File renamed")
+        print(f"Renaming file: \n{file}\n==> {new_title}\n")
         files_renamed += 1
     print(f"Files renamed: {files_renamed}")
 
@@ -86,9 +88,11 @@ if __name__ == "__main__":
 
     """.split()
 
-    for index, video in enumerate(VIDEOS, 1):
-        print(f"{index} of {len(VIDEOS)}")
-        video_filename = download_yt_video(video)
-        convert_mp4_to_mp3(video_filename)
+    # for index, video in enumerate(VIDEOS, 1):
+    #     print(f"{index} of {len(VIDEOS)}")
+    #     video_filename = download_yt_video(video)
+    #     if not video_filename:
+    #         print("Could not get file")
+    #     convert_mp4_to_mp3(video_filename)
 
     rename_mp3s(os.listdir())

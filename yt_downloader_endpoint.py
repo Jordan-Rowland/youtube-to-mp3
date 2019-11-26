@@ -1,21 +1,26 @@
-from flask import Flask, jsonify, send_file, send_from_directory
-from youtube_downloader.yt_to_mp3 import download_yt_video, convert_mp4_to_mp3
+"""Endpoint for API access."""
+
+from flask import Flask, jsonify, send_file
+from yt_to_mp3 import download_yt_video, convert_mp4_to_mp3
 
 
-app = Flask(__name__)
+APP = Flask(__name__)
 
-@app.route("/download/<video_id>")
+
+@APP.route("/download/<video_id>")
 def download(video_id):
+    """Download video via cURL command or other API methods."""
     video_filename = download_yt_video(f"https://www.youtube.com/watch?v={video_id}")
-    convert_mp4_to_mp3(
-        video_filename,
-        output_title="_".join(video_filename.split()))
-    send_file(
-        video_filename + ".mp3",
-        as_attachment=True)
-    return "<h1>Thank you for downloading</h1>"
+    if not video_filename:
+        return jsonify(error="Could not download from YouTube.")
+    # converted = convert_mp4_to_mp3(video_filename, output_title="_".join(video_filename.split()))
+    print(video_filename)
+    converted = convert_mp4_to_mp3(video_filename)
+    if not converted:
+        return jsonify(error="Could not convert to mp3.")
+    send_file(video_filename + ".mp3", as_attachment=True)
+    return jsonify(message=f"File saved as '{video_filename}.mp3'")
 
-if __name__ == '__main__':
-   app.run()
 
-
+if __name__ == "__main__":
+    APP.run()
