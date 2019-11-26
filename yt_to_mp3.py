@@ -23,7 +23,7 @@ def download_yt_video(video_url):
         title = yt.title
         print(title)
         stream = yt.streams.filter(only_audio=True).filter(subtype="mp4").first()
-        print(stream)
+        # print(stream)
         print("Downloading video...")
         new_title = "_".join(safe_name(title).split())
         stream.download(filename=new_title)
@@ -32,26 +32,26 @@ def download_yt_video(video_url):
     return new_title
 
 
-def convert_mp4_to_mp3(title, output_title=None):
+def convert_mp4_to_mp3(title, changed_output_title=None):
     """Invokes bash commands to convert file to MP3 and delete original video file."""
-    if not output_title:
-        output_title = title
+    if not changed_output_title:
+        changed_output_title = title
     bash_command_1 = subprocess.Popen(
         ["ffmpeg", "-i", f"{title}.mp4", "-vn", "-f", "wav", "-"], stdout=subprocess.PIPE,
     )
     bash_command_2 = subprocess.Popen(
-        ["lame", "-V", "3", "-", f"{output_title}.mp3"], stdin=bash_command_1.stdout,
+        ["lame", "-V", "3", "-", f"{changed_output_title}.mp3"], stdin=bash_command_1.stdout,
     )
     bash_command_1.stdout.close()
     print("Converting to MP3...")
     output = bash_command_2.communicate()[0]
     print("Deleting original video file...")
     os.remove(f"{title}.mp4")
-    print(f"Saved as '{output_title}.mp3'")
+    print(f"Saved as '{changed_output_title}.mp3'")
 
 
 def rename_mp3s(directory, ask_confirmation=False):
-    """Collects mp3 files from a directory and normalizes the names if the fit (artist) - (title)
+    """Collects mp3 files from a directory and normalizes the names if they fit (artist) - (title)
     format. Optional argument to ask for confirmation for renaming."""
     title_match = re.compile(r"([\w+\s+]+)-([\w\s'\",]+)")
     files_renamed = 0
@@ -66,18 +66,18 @@ def rename_mp3s(directory, ask_confirmation=False):
         if file == new_title or new_title in mp3s:
             continue
         if not ask_confirmation:
-            print(f"Renaming file: \n{file}\n==> {new_title}\n")
             os.rename(file, new_title)
+            print(f"Renaming file: \n{file}\n==> {new_title}\n")
             files_renamed += 1
             continue
         print(f"{file} ==> {new_title}")
         confirm = input("Rename? ['y' to confirm]: ")
-        if confirm.lower() == "y":
-            os.rename(file, new_title)
-            print("File renamed")
-            files_renamed += 1
-        else:
+        if not confirm.lower() == "y":
             print("File unchanged")
+            continue
+        os.rename(file, new_title)
+        print("File renamed")
+        files_renamed += 1
     print(f"Files renamed: {files_renamed}")
 
 
