@@ -13,7 +13,6 @@ def download(video_id):
     video_filename = download_yt_video(f"https://www.youtube.com/watch?v={video_id}")
     if not video_filename:
         return jsonify(error="Could not download from YouTube.")
-    # converted = convert_mp4_to_mp3(video_filename, output_title="_".join(video_filename.split()))
     print(video_filename)
     converted = convert_mp4_to_mp3(video_filename)
     if not converted:

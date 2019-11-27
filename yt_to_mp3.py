@@ -10,7 +10,7 @@ from pytube import YouTube
 
 
 def safe_name(name, safe_chars=" -()[]\"'!"):
-    """Convert filename to safe characters so file renaming function works."""
+    """Convert filename to safe characters."""
     return "".join(
         [character for character in name if character.isalnum() or character in safe_chars]
     )
@@ -24,7 +24,6 @@ def download_yt_video(video_url):
         print(title)
         stream = yt.streams.filter(only_audio=True).filter(subtype="mp4").first()
         print("Downloading video...")
-        # new_title = "_".join(safe_name(title).split())
         new_title = safe_name(title)
         stream.download(filename=new_title)
     except Exception:
@@ -33,9 +32,9 @@ def download_yt_video(video_url):
 
 
 def convert_mp4_to_mp3(title, output_title=None):
-    """Invokes bash commands to convert file to MP3 and delete original video file."""
-    if not output_title:
-        output_title = title
+    """Invokes bash commands to convert file to MP3 using lame and ffmpeg
+    and delete original video file."""
+    output_title = output_title or title
     try:
         bash_command_1 = subprocess.Popen(
             ["ffmpeg", "-i", f"{title}.mp4", "-vn", "-f", "wav", "-"], stdout=subprocess.PIPE,
@@ -56,8 +55,9 @@ def convert_mp4_to_mp3(title, output_title=None):
 
 
 def rename_mp3s(directory, ask_confirmation=False):
-    """Collects mp3 files from a directory and normalizes the names if they fit (artist) - (title)
-    format. Optional argument to ask for confirmation for renaming."""
+    """Collects mp3 files from a directory and normalizes the names
+    if they fit (artist) - (title) format. Optional argument to ask
+    confirmation for renaming."""
     title_match = re.compile(r"([\w+\s+]+)-([\w\s'\",]+)")
     files_renamed = 0
     mp3s = [file for file in directory if file.endswith(".mp3")]
@@ -88,11 +88,11 @@ if __name__ == "__main__":
 
     """.split()
 
-    # for index, video in enumerate(VIDEOS, 1):
-    #     print(f"{index} of {len(VIDEOS)}")
-    #     video_filename = download_yt_video(video)
+    for index, video in enumerate(VIDEOS, 1):
+        print(f"{index} of {len(VIDEOS)}")
+        video_filename = download_yt_video(video)
     #     if not video_filename:
     #         print("Could not get file")
     #     convert_mp4_to_mp3(video_filename)
 
-    rename_mp3s(os.listdir())
+    # rename_mp3s(os.listdir())
